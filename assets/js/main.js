@@ -24,3 +24,35 @@ const data = [
     { id: 148, name: "Dragonair", types: ["dragon"] }
 ];
 
+const nombrePokemon = new Map(),
+    idPokemon = new Map();
+
+for(const pokemon in data) {
+    nombrePokemon.set(data[pokemon].name, pokemon);
+    idPokemon.set(data[pokemon].id, pokemon);
+}
+
+const posicionPokemon = pokemon => idPokemon.get(pokemon) || nombrePokemon.get(pokemon)
+
+const buscarPokemon = (pokemon, callback) => 
+    setTimeout(() => {
+        callback(posicionPokemon(pokemon))
+    }, 1000);
+
+const buscarTipos = posicionPokemon => {
+    let texto = "Tipos: ";
+    for(const tipo in data[posicionPokemon].types) {
+        texto += `${parseInt(tipo) + 1}. ${data[posicionPokemon].types[tipo]} `;
+    }
+    return texto;
+}
+
+const mostrarPokemon = pokemon => {
+    try {
+        console.log(`Pokemon: ID: ${data[pokemon].id}, Nombre: ${data[pokemon].name}, ${buscarTipos(pokemon)}`);
+    } catch(error) {
+        console.error(`El Pokemon ingresado no existe.`)
+    }
+}
+
+buscarPokemon(148, mostrarPokemon)
