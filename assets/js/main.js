@@ -25,34 +25,75 @@ const data = [
 ];
 
 const nombrePokemon = new Map(),
-    idPokemon = new Map();
+    idPokemon = new Map(),
+    listaPokemonIngresado = new Set();
 
 for(const pokemon in data) {
     nombrePokemon.set(data[pokemon].name, pokemon);
-    idPokemon.set(data[pokemon].id, pokemon);
+    idPokemon.set(data[pokemon].id.toString(), pokemon);
 }
 
-const posicionPokemon = pokemon => idPokemon.get(pokemon) || nombrePokemon.get(pokemon)
+const posicionPokemon = pokemon => data[idPokemon.get(pokemon) || nombrePokemon.get(pokemon)]
 
 const buscarPokemon = (pokemon, callback) => 
     setTimeout(() => {
         callback(posicionPokemon(pokemon))
     }, 1000);
 
-const buscarTipos = posicionPokemon => {
-    let texto = "Tipos: ";
-    for(const tipo in data[posicionPokemon].types) {
-        texto += `${parseInt(tipo) + 1}. ${data[posicionPokemon].types[tipo]} `;
+const buscarTipos = pokemon => {
+    let texto = "";
+    for(const tipo in pokemon) {
+        texto += `<p class="tipoPokemon ${pokemon[tipo]}">${pokemon[tipo]}</p>`;
     }
     return texto;
 }
 
-const mostrarPokemon = pokemon => {
-    try {
-        console.log(`Pokemon: ID: ${data[pokemon].id}, Nombre: ${data[pokemon].name}, ${buscarTipos(pokemon)}`);
-    } catch(error) {
-        console.error(`El Pokemon ingresado no existe.`)
+const cambiarIdPokemon = pokemon => 
+    (pokemon.toString().length == 1) ? pokemon = "00" + pokemon 
+    : (pokemon.toString().length == 2) ? pokemon = "0" + pokemon 
+    : pokemon
+
+const anadirPokemon = pokemon => {
+    if(listaPokemonIngresado.has(pokemon)) {
+        alert(`Ingrese un Pokemon diferente`)
+    } else {
+        listaPokemonIngresado.add(pokemon);
+        ordenarPokemon(listaPokemonIngresado, pokemonOrdenados => {
+            const contenedorMostrarPokemon = document.getElementById("contenedorMostrarPokemon");
+            contenedorMostrarPokemon.innerHTML = "";
+            pokemonOrdenados.forEach(pokemon => {
+                try {
+                    contenedorMostrarPokemon.appendChild(ordenarDatos(pokemon));
+                } catch (error) {
+                    alert(`El Pokemon ingresado no existe.`);
+                }
+            })
+        });
     }
 }
 
-buscarPokemon(148, mostrarPokemon)
+const ordenarDatos = pokemon => {
+    const contenedorPokemon = document.createElement("div");
+    contenedorPokemon.classList.add("contenedorPokemon");
+    contenedorPokemon.innerHTML += `
+        <p class="idPokemon">#${cambiarIdPokemon(pokemon.id)}</p>
+        <p class="nombrePokemon">${pokemon.name}</p>
+        <div class="contenedorTipos">
+            ${buscarTipos(pokemon.types)}
+        </div>
+        `;
+    return contenedorPokemon;
+}
+
+document.getElementById("btn").addEventListener("click", e => {
+    buscarPokemon(document.getElementById("pokemon").value, anadirPokemon)
+})
+
+const ordenarPokemon = (pokemon, callback) => {
+    setTimeout(() => {
+        const listaPokemonArray = [...pokemon];
+        callback(listaPokemonArray.slice().sort((a, b) => 
+            { return a.id - b.id; })
+        );
+    }, 500);
+};
